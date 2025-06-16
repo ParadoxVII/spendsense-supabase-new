@@ -45,7 +45,7 @@ export default function LoginForm() {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="space-y-2 text-center">
-        <h1 className="text-4xl font-semibold tracking-tight text-white">Welcome back</h1>
+        <h1 className="text-4xl font-semibold tracking-tight ">Welcome back</h1>
         <p className="text-lg text-gray-400">Sign in to your account</p>
       </div>
 
@@ -86,7 +86,7 @@ export default function LoginForm() {
 
         <div className="text-center text-gray-400">
           Don't have an account?{" "}
-          <Link href="/auth/sign-up" className="text-white hover:underline">
+          <Link href="/auth/sign-up" className=" text-black dark:text-white hover:underline">
             Sign up
           </Link>
         </div>

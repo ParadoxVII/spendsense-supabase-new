@@ -11,7 +11,7 @@ const geist = Geist({
 export const metadata: Metadata = {
   title: "SpendSense - Financial Insights",
   description: "Track and analyze your spending across multiple accounts and currencies",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -23,7 +23,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={geist.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
+          <div className="min-h-screen bg-[#efefef] dark:bg-[#161616] text-black dark:text-white">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

@@ -6,7 +6,7 @@ export default async function Dashboard() {
   // If Supabase is not configured, show setup message directly
   if (!isSupabaseConfigured) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#161616]">
+      <div className="flex min-h-screen items-center justify-center ">
         <h1 className="text-2xl font-bold mb-4 text-white">Connect Supabase to get started</h1>
       </div>
     )
@@ -24,7 +24,7 @@ export default async function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#161616]">
+    <div className="min-h-screen ">
       <DashboardTabs userEmail={user.email || ""} />
     </div>
   )

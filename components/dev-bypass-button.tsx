@@ -22,7 +22,7 @@ export default function DevBypassButton({ className }: DevBypassButtonProps) {
       <Button
         type="submit"
         variant="outline"
-        className={`border-amber-700 bg-amber-950/30 text-amber-500 hover:bg-amber-900/50 hover:text-amber-400 ${className}`}
+        className={`border-amber-700 bg-amber-950 text-amber-500 hover:bg-amber-900/50 hover:text-amber-400 ${className}`}
       >
         <Bug className="mr-2 h-4 w-4" />
         Dev Bypass

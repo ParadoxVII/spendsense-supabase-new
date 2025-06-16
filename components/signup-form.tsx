@@ -36,7 +36,7 @@ export default function SignUpForm() {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="space-y-2 text-center">
-        <h1 className="text-4xl font-semibold tracking-tight text-white">Create an account</h1>
+        <h1 className="text-4xl font-semibold tracking-tight">Create an account</h1>
         <p className="text-lg text-gray-400">Sign up to get started</p>
       </div>
 
@@ -83,7 +83,7 @@ export default function SignUpForm() {
 
         <div className="text-center text-gray-400">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-white hover:underline">
+          <Link href="/auth/login" className="hover:underline text-black dark:text-white">
             Log in
           </Link>
         </div>
