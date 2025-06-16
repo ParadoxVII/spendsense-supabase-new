@@ -1,0 +1,190 @@
+"use client"
+
+import type React from "react"
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Plus, Upload, CreditCard, FileText, Loader2 } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { addStatement, getStatements } from "@/lib/supabase-actions"
+import { useActionState } from "react"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import type { Bank, Statement } from "@/lib/db-types"
+
+interface BankCardProps {
+  bank: Bank
+}
+
+export default function BankCard({ bank }: BankCardProps) {
+  const [statements, setStatements] = useState<Statement[]>([])
+  const [loading, setLoading] = useState(true)
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [state, formAction] = useActionState(addStatement, null)
+  const supabase = createClientComponentClient()
+
+  // Fetch statements on component mount
+  useEffect(() => {
+    async function fetchStatements() {
+      try {
+        const data = await getStatements(bank.id)
+        setStatements(data)
+      } catch (error) {
+        console.error("Error fetching statements:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStatements()
+  }, [bank.id])
+
+  // Close dialog and refresh statements when a statement is successfully added
+  useEffect(() => {
+    if (state?.success) {
+      setUploadOpen(false)
+      setUploading(false)
+      // Refresh statements
+      getStatements(bank.id).then((data) => setStatements(data))
+    }
+  }, [state, bank.id])
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploading(true)
+    const file = files[0]
+
+    try {
+      // Get current user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error("User not authenticated")
+      }
+
+      // Upload file to Supabase Storage
+      const fileExt = file.name.split(".").pop()
+      const filePath = `${user.id}/${bank.id}/${Date.now()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage.from("statements").upload(filePath, file)
+
+      if (uploadError) {
+        throw uploadError
+      }
+
+      // Add statement to database
+      const formData = new FormData()
+      formData.append("bank_id", bank.id)
+      formData.append("name", file.name)
+      formData.append("file_path", filePath)
+      formAction(formData)
+    } catch (error) {
+      console.error("Error uploading file:", error)
+      setUploading(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="flex items-center">
+          <CreditCard className="h-5 w-5 mr-2 text-primary" />
+          {bank.name}
+        </CardTitle>
+        <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+              <Plus className="h-4 w-4" />
+              <span className="sr-only">Add Statement</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Upload Bank Statement</DialogTitle>
+            </DialogHeader>
+            {state?.error && (
+              <div className="bg-destructive/10 border border-destructive/50 text-destructive px-4 py-3 rounded mb-4">
+                {state.error}
+              </div>
+            )}
+            <div className="space-y-4 py-4">
+              <div className="border-2 border-dashed border-muted rounded-lg p-10 text-center">
+                {uploading ? (
+                  <div className="flex flex-col items-center">
+                    <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+                    <p className="text-sm text-muted-foreground">Uploading your statement...</p>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Drag and drop your PDF statement or click to browse
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">Supports PDF files up to 10MB</p>
+                    <label htmlFor="file-upload">
+                      <input
+                        id="file-upload"
+                        name="file-upload"
+                        type="file"
+                        accept=".pdf"
+                        className="sr-only"
+                        onChange={handleFileUpload}
+                        disabled={uploading}
+                      />
+                      <Button onClick={() => document.getElementById("file-upload")?.click()} disabled={uploading}>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Browse Files
+                      </Button>
+                    </label>
+                  </>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex justify-center py-8 border-t border-border">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        ) : statements.length === 0 ? (
+          <div className="text-center py-8 border-t border-border">
+            <FileText className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground mb-4">No statements uploaded yet</p>
+            <Button variant="outline" size="sm" onClick={() => setUploadOpen(true)}>
+              <Upload className="h-3 w-3 mr-2" />
+              Upload Statement
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2 pt-2 border-t border-border">
+            {statements.map((statement) => (
+              <div key={statement.id} className="flex items-center justify-between p-2 hover:bg-muted rounded-md">
+                <div className="flex items-center">
+                  <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="text-sm truncate max-w-[150px]">{statement.name}</span>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(statement.upload_date).toLocaleDateString()}
+                </span>
+              </div>
+            ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-primary hover:text-primary hover:bg-primary/10"
+              onClick={() => setUploadOpen(true)}
+            >
+              <Plus className="h-3 w-3 mr-2" />
+              Add Another Statement
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
