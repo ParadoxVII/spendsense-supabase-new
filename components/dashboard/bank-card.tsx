@@ -39,7 +39,7 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
   const [deleting, setDeleting] = useState(false)
   const [state, formAction] = useActionState(addStatement, null)
   const supabase = createClientComponentClient()
-  const [startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition()
 
   // Fetch statements on component mount
   useEffect(() => {
@@ -133,6 +133,7 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
       const result = await deleteStatements(Array.from(selectedStatements))
       if (result?.error) {
         console.error("Error deleting statements:", result.error)
+        alert(`Error deleting statements: ${result.error}`)
       } else {
         // Refresh statements
         const data = await getStatements(bank.id)
@@ -142,6 +143,7 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
       }
     } catch (error) {
       console.error("Error deleting statements:", error)
+      alert("An unexpected error occurred while deleting statements")
     } finally {
       setDeleting(false)
       setDeleteConfirmOpen(false)
@@ -175,7 +177,7 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
             )}
             <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
               <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" disabled={isPending}>
                   <Plus className="h-4 w-4" />
                   <span className="sr-only">Add Statement</span>
                 </Button>
@@ -191,10 +193,12 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
                 )}
                 <div className="space-y-4 py-4">
                   <div className="border-2 border-dashed border-muted rounded-lg p-10 text-center">
-                    {uploading ? (
+                    {uploading || isPending ? (
                       <div className="flex flex-col items-center">
                         <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-                        <p className="text-sm text-muted-foreground">Uploading your statement...</p>
+                        <p className="text-sm text-muted-foreground">
+                          {uploading ? "Uploading your statement..." : "Processing..."}
+                        </p>
                       </div>
                     ) : (
                       <>
@@ -203,17 +207,20 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
                           Drag and drop your PDF statement or click to browse
                         </p>
                         <p className="text-xs text-muted-foreground mb-4">Supports PDF files up to 10MB</p>
-                        <label htmlFor="file-upload">
+                        <label htmlFor={`file-upload-${bank.id}`}>
                           <input
-                            id="file-upload"
+                            id={`file-upload-${bank.id}`}
                             name="file-upload"
                             type="file"
                             accept=".pdf"
                             className="sr-only"
                             onChange={handleFileUpload}
-                            disabled={uploading}
+                            disabled={uploading || isPending}
                           />
-                          <Button onClick={() => document.getElementById("file-upload")?.click()} disabled={uploading}>
+                          <Button
+                            onClick={() => document.getElementById(`file-upload-${bank.id}`)?.click()}
+                            disabled={uploading || isPending}
+                          >
                             <Upload className="h-4 w-4 mr-2" />
                             Browse Files
                           </Button>
@@ -237,7 +244,7 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
             <FileText className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground mb-4">No statements uploaded yet</p>
             {!selectMode && (
-              <Button variant="outline" size="sm" onClick={() => setUploadOpen(true)}>
+              <Button variant="outline" size="sm" onClick={() => setUploadOpen(true)} disabled={isPending}>
                 <Upload className="h-3 w-3 mr-2" />
                 Upload Statement
               </Button>
@@ -257,13 +264,13 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={exitStatementSelectMode}>
+                  <Button variant="outline" size="sm" onClick={exitStatementSelectMode} disabled={deleting}>
                     Cancel
                   </Button>
                   {selectedStatements.size > 0 && (
                     <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
+                        <Button variant="destructive" size="sm" disabled={deleting}>
                           <Trash2 className="h-3 w-3 mr-1" />
                           Delete
                         </Button>
@@ -277,7 +284,7 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={handleDeleteSelectedStatements}
                             disabled={deleting}
@@ -323,6 +330,7 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
                 size="sm"
                 className="w-full justify-start text-primary hover:text-primary hover:bg-primary/10"
                 onClick={() => setUploadOpen(true)}
+                disabled={isPending}
               >
                 <Plus className="h-3 w-3 mr-2" />
                 Add Another Statement

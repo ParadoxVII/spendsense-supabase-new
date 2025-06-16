@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus, CreditCard, Loader2, Trash2, Edit3 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -42,6 +42,7 @@ export default function BanksTab() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [state, formAction] = useActionState(addBank, null)
+  const [isPending, startTransition] = useTransition()
 
   // Fetch banks on component mount
   useEffect(() => {
@@ -69,11 +70,13 @@ export default function BanksTab() {
   }, [state])
 
   const handleAddBank = (bank: { bank_type: string; name: string; logo: string }) => {
-    const formData = new FormData()
-    formData.append("bank_type", bank.bank_type)
-    formData.append("name", bank.name)
-    formData.append("logo", bank.logo)
-    formAction(formData)
+    startTransition(() => {
+      const formData = new FormData()
+      formData.append("bank_type", bank.bank_type)
+      formData.append("name", bank.name)
+      formData.append("logo", bank.logo)
+      formAction(formData)
+    })
   }
 
   const handleSelectBank = (bankId: string, checked: boolean) => {
@@ -102,6 +105,7 @@ export default function BanksTab() {
       const result = await deleteBanks(Array.from(selectedBanks))
       if (result?.error) {
         console.error("Error deleting banks:", result.error)
+        alert(`Error deleting banks: ${result.error}`)
       } else {
         // Refresh banks
         const data = await getBanks()
@@ -111,6 +115,7 @@ export default function BanksTab() {
       }
     } catch (error) {
       console.error("Error deleting banks:", error)
+      alert("An unexpected error occurred while deleting banks")
     } finally {
       setDeleting(false)
       setDeleteConfirmOpen(false)
@@ -166,7 +171,7 @@ export default function BanksTab() {
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleDeleteSelected}
                         disabled={deleting}
@@ -190,7 +195,7 @@ export default function BanksTab() {
           {!selectMode && (
             <Dialog open={addBankOpen} onOpenChange={setAddBankOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button disabled={isPending}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Bank
                 </Button>
@@ -213,7 +218,7 @@ export default function BanksTab() {
                         variant="outline"
                         className="flex flex-col h-24"
                         onClick={() => handleAddBank(bank)}
-                        disabled={isAlreadyAdded}
+                        disabled={isAlreadyAdded || isPending}
                       >
                         <CreditCard className="h-8 w-8 mb-2 text-primary" />
                         <span className="text-center">
@@ -246,7 +251,7 @@ export default function BanksTab() {
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
             Add your first bank to start uploading statements and tracking your expenses.
           </p>
-          <Button onClick={() => setAddBankOpen(true)}>
+          <Button onClick={() => setAddBankOpen(true)} disabled={isPending}>
             <Plus className="h-4 w-4 mr-2" />
             Add Your First Bank
           </Button>
