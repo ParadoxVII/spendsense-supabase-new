@@ -8,12 +8,12 @@ import type { Bank, Statement } from "./db-types"
 
 // Add a new bank for the current user
 export async function addBank(prevState: any, formData: FormData) {
-  const bankId = formData.get("id") as string
+  const bankType = formData.get("bank_type") as string // Changed from "id" to "bank_type"
   const bankName = formData.get("name") as string
   const bankLogo = formData.get("logo") as string
 
-  if (!bankId || !bankName) {
-    return { error: "Bank ID and name are required" }
+  if (!bankType || !bankName) {
+    return { error: "Bank type and name are required" }
   }
 
   const cookieStore = cookies()
@@ -28,10 +28,22 @@ export async function addBank(prevState: any, formData: FormData) {
     return { error: "User not authenticated" }
   }
 
-  // Insert the bank
+  // Check if user already has this bank type
+  const { data: existingBank } = await supabase
+    .from("banks")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("bank_type", bankType)
+    .single()
+
+  if (existingBank) {
+    return { error: "You have already added this bank" }
+  }
+
+  // Insert the bank (UUID will be auto-generated)
   const { error } = await supabase.from("banks").insert({
-    id: bankId,
     user_id: user.id,
+    bank_type: bankType,
     name: bankName,
     logo: bankLogo || "default",
   })

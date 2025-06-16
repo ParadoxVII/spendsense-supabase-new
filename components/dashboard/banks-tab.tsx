@@ -11,14 +11,14 @@ import type { Bank } from "@/lib/db-types"
 
 // Sample bank data
 const COMMON_BANKS = [
-  { id: "chase", name: "Chase", logo: "chase" },
-  { id: "bofa", name: "Bank of America", logo: "bofa" },
-  { id: "wells", name: "Wells Fargo", logo: "wells" },
-  { id: "citi", name: "Citibank", logo: "citi" },
-  { id: "capital", name: "Capital One", logo: "capital" },
-  { id: "discover", name: "Discover", logo: "discover" },
-  { id: "amex", name: "American Express", logo: "amex" },
-  { id: "other", name: "Other Bank", logo: "other" },
+  { bank_type: "chase", name: "Chase", logo: "chase" },
+  { bank_type: "bofa", name: "Bank of America", logo: "bofa" },
+  { bank_type: "wells", name: "Wells Fargo", logo: "wells" },
+  { bank_type: "citi", name: "Citibank", logo: "citi" },
+  { bank_type: "capital", name: "Capital One", logo: "capital" },
+  { bank_type: "discover", name: "Discover", logo: "discover" },
+  { bank_type: "amex", name: "American Express", logo: "amex" },
+  { bank_type: "other", name: "Other Bank", logo: "other" },
 ]
 
 export default function BanksTab() {
@@ -52,13 +52,16 @@ export default function BanksTab() {
     }
   }, [state])
 
-  const handleAddBank = (bank: { id: string; name: string; logo: string }) => {
+  const handleAddBank = (bank: { bank_type: string; name: string; logo: string }) => {
     const formData = new FormData()
-    formData.append("id", bank.id)
+    formData.append("bank_type", bank.bank_type) // Changed from "id" to "bank_type"
     formData.append("name", bank.name)
     formData.append("logo", bank.logo)
     formAction(formData)
   }
+
+  // Get list of bank types that user already has
+  const userBankTypes = banks.map((bank) => bank.bank_type)
 
   if (loading) {
     return (
@@ -89,17 +92,24 @@ export default function BanksTab() {
               </div>
             )}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-              {COMMON_BANKS.map((bank) => (
-                <Button
-                  key={bank.id}
-                  variant="outline"
-                  className="flex flex-col h-24"
-                  onClick={() => handleAddBank(bank)}
-                >
-                  <CreditCard className="h-8 w-8 mb-2 text-primary" />
-                  <span>{bank.name}</span>
-                </Button>
-              ))}
+              {COMMON_BANKS.map((bank) => {
+                const isAlreadyAdded = userBankTypes.includes(bank.bank_type)
+                return (
+                  <Button
+                    key={bank.bank_type}
+                    variant="outline"
+                    className="flex flex-col h-24"
+                    onClick={() => handleAddBank(bank)}
+                    disabled={isAlreadyAdded}
+                  >
+                    <CreditCard className="h-8 w-8 mb-2 text-primary" />
+                    <span className="text-center">
+                      {bank.name}
+                      {isAlreadyAdded && <div className="text-xs text-muted-foreground">Already added</div>}
+                    </span>
+                  </Button>
+                )
+              })}
             </div>
           </DialogContent>
         </Dialog>
