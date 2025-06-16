@@ -2,13 +2,14 @@ import { createClient, isSupabaseConfigured } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import SignUpForm from "@/components/signup-form"
 import DevBypassButton from "@/components/dev-bypass-button"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export default async function SignUpPage() {
   // If Supabase is not configured, show setup message directly
   if (!isSupabaseConfigured) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#161616]">
-        <h1 className="text-2xl font-bold mb-4 text-white">Connect Supabase to get started</h1>
+      <div className="flex min-h-screen items-center justify-center ">
+        <h1 className="text-2xl font-bold mb-4">Connect Supabase to get started</h1>
       </div>
     )
   }
@@ -25,10 +26,10 @@ export default async function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#161616] px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       {/* Dev Bypass Button */}
-      <div className="absolute top-4 right-4">
-        <DevBypassButton />
+      <div className="flex items-center gap-4 absolute top-4 right-4">
+        <ThemeToggle />
       </div>
 
       <SignUpForm />
