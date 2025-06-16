@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Upload, CreditCard, FileText, Loader2, Trash2, Edit3 } from "lucide-react"
@@ -39,6 +39,7 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
   const [deleting, setDeleting] = useState(false)
   const [state, formAction] = useActionState(addStatement, null)
   const supabase = createClientComponentClient()
+  const [startTransition] = useTransition()
 
   // Fetch statements on component mount
   useEffect(() => {
@@ -92,12 +93,14 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
         throw uploadError
       }
 
-      // Add statement to database
-      const formData = new FormData()
-      formData.append("bank_id", bank.id)
-      formData.append("name", file.name)
-      formData.append("file_path", filePath)
-      formAction(formData)
+      // Add statement to database using startTransition
+      startTransition(() => {
+        const formData = new FormData()
+        formData.append("bank_id", bank.id)
+        formData.append("name", file.name)
+        formData.append("file_path", filePath)
+        formAction(formData)
+      })
     } catch (error) {
       console.error("Error uploading file:", error)
       setUploading(false)
