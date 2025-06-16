@@ -86,6 +86,65 @@ export async function getBanks() {
   return data as Bank[]
 }
 
+// Delete a bank and all its statements
+export async function deleteBank(bankId: string) {
+  const cookieStore = cookies()
+  const supabase = createServerActionClient({ cookies: () => cookieStore })
+
+  // Get the current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "User not authenticated" }
+  }
+
+  // Verify the bank belongs to the user
+  const { data: bank } = await supabase.from("banks").select("id").eq("id", bankId).eq("user_id", user.id).single()
+
+  if (!bank) {
+    return { error: "Bank not found or access denied" }
+  }
+
+  // Delete the bank (statements will be deleted automatically due to CASCADE)
+  const { error } = await supabase.from("banks").delete().eq("id", bankId)
+
+  if (error) {
+    console.error("Error deleting bank:", error)
+    return { error: error.message }
+  }
+
+  revalidatePath("/dashboard")
+  return { success: true }
+}
+
+// Delete multiple banks
+export async function deleteBanks(bankIds: string[]) {
+  const cookieStore = cookies()
+  const supabase = createServerActionClient({ cookies: () => cookieStore })
+
+  // Get the current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "User not authenticated" }
+  }
+
+  // Delete the banks (statements will be deleted automatically due to CASCADE)
+  const { error } = await supabase.from("banks").delete().in("id", bankIds).eq("user_id", user.id)
+
+  if (error) {
+    console.error("Error deleting banks:", error)
+    return { error: error.message }
+  }
+
+  revalidatePath("/dashboard")
+  return { success: true }
+}
+
 // Add a new statement for a bank
 export async function addStatement(prevState: any, formData: FormData) {
   const bankId = formData.get("bank_id") as string
@@ -134,6 +193,104 @@ export async function getStatements(bankId: string) {
   }
 
   return data as Statement[]
+}
+
+// Delete a statement
+export async function deleteStatement(statementId: string) {
+  const cookieStore = cookies()
+  const supabase = createServerActionClient({ cookies: () => cookieStore })
+
+  // Get the current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "User not authenticated" }
+  }
+
+  // Verify the statement belongs to the user (through bank ownership)
+  const { data: statement } = await supabase
+    .from("statements")
+    .select(`
+      id,
+      file_path,
+      banks!inner (
+        user_id
+      )
+    `)
+    .eq("id", statementId)
+    .eq("banks.user_id", user.id)
+    .single()
+
+  if (!statement) {
+    return { error: "Statement not found or access denied" }
+  }
+
+  // Delete the file from storage
+  if (statement.file_path) {
+    await supabase.storage.from("statements").remove([statement.file_path])
+  }
+
+  // Delete the statement record
+  const { error } = await supabase.from("statements").delete().eq("id", statementId)
+
+  if (error) {
+    console.error("Error deleting statement:", error)
+    return { error: error.message }
+  }
+
+  revalidatePath("/dashboard")
+  return { success: true }
+}
+
+// Delete multiple statements
+export async function deleteStatements(statementIds: string[]) {
+  const cookieStore = cookies()
+  const supabase = createServerActionClient({ cookies: () => cookieStore })
+
+  // Get the current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "User not authenticated" }
+  }
+
+  // Get statements with file paths for cleanup
+  const { data: statements } = await supabase
+    .from("statements")
+    .select(`
+      id,
+      file_path,
+      banks!inner (
+        user_id
+      )
+    `)
+    .in("id", statementIds)
+    .eq("banks.user_id", user.id)
+
+  if (!statements || statements.length === 0) {
+    return { error: "No statements found or access denied" }
+  }
+
+  // Delete files from storage
+  const filePaths = statements.map((s) => s.file_path).filter(Boolean)
+  if (filePaths.length > 0) {
+    await supabase.storage.from("statements").remove(filePaths)
+  }
+
+  // Delete the statement records
+  const { error } = await supabase.from("statements").delete().in("id", statementIds)
+
+  if (error) {
+    console.error("Error deleting statements:", error)
+    return { error: error.message }
+  }
+
+  revalidatePath("/dashboard")
+  return { success: true }
 }
 
 // Upload a file to Supabase Storage

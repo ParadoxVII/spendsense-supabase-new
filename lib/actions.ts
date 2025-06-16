@@ -85,9 +85,12 @@ export async function signOut() {
 
 // Development bypass for authentication
 export async function devBypass() {
-  // Only allow in development environment
-  if (process.env.NODE_ENV !== "development") {
-    console.error("Dev bypass attempted in non-development environment")
+  // Allow in development, staging, and production environments
+  const allowedEnvs = ["development", "staging", "production"]
+  const currentEnv = process.env.NODE_ENV || "development"
+
+  if (!allowedEnvs.includes(currentEnv)) {
+    console.error("Dev bypass not allowed in this environment")
     redirect("/auth/login")
   }
 

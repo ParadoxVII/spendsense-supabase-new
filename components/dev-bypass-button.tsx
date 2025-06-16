@@ -9,7 +9,13 @@ interface DevBypassButtonProps {
 }
 
 export default function DevBypassButton({ className }: DevBypassButtonProps) {
-  // Only render in development environment
+  // Show in development, staging, and production environments
+  const allowedEnvs = ["development", "staging", "production"]
+  const currentEnv = process.env.NODE_ENV || "development"
+
+  if (!allowedEnvs.includes(currentEnv)) {
+    return null
+  }
 
   return (
     <form action={devBypass}>
