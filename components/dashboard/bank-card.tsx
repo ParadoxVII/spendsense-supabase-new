@@ -20,7 +20,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { addStatement, getStatements, deleteStatements } from "@/lib/supabase-actions"
 import { useActionState } from "react"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { supabase } from "@/lib/supabase/client"
 import type { Bank, Statement } from "@/lib/db-types"
 
 interface BankCardProps {
@@ -38,7 +38,6 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [state, formAction] = useActionState(addStatement, null)
-  const supabase = createClientComponentClient()
   const [isPending, startTransition] = useTransition()
 
   // Fetch statements on component mount
