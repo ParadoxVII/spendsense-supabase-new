@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 export default async function WelcomePage() {
   // If Supabase is configured, check if user is already logged in
   if (isSupabaseConfigured) {
-    const supabase = createClient()
+    const supabase = await createClient()
     const {
       data: { session },
     } = await supabase.auth.getSession()
