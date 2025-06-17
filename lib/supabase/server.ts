@@ -46,16 +46,21 @@ export const createClient = cache((): SimplifiedSupabaseClient => {
         try {
           cookieStore.set(name, value, options)
         } catch (error) {
-          // Handle cases where cookies can't be set (e.g., during RSC prerendering)
-          console.warn(`Failed to set cookie '${name}':`, error)
+          // The `set` method was called from a Server Component.
+          // This can be ignored if you have middleware refreshing
+          // user sessions.
+          // console.warn(`(Server Component) Failed to set cookie '${name}':`, error); // Optional: for debugging
         }
       },
       remove(name: string, options: CookieOptions) {
         try {
-          cookieStore.delete(name, options)
+          // As per Supabase SSR docs for server-side client:
+          // Use `set` with an empty value and appropriate options to remove a cookie.
+          cookieStore.set(name, "", options)
         } catch (error) {
-          // Handle cases where cookies can't be removed
-          console.warn(`Failed to remove cookie '${name}':`, error)
+          // The `remove` (via set) method was called from a Server Component.
+          // This can be ignored if you have middleware refreshing user sessions.
+          // console.warn(`(Server Component) Failed to remove cookie '${name}':`, error); // Optional: for debugging
         }
       },
     },
