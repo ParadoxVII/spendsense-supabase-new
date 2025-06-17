@@ -1,7 +1,6 @@
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import SignUpForm from "@/components/signup-form"
-import DevBypassButton from "@/components/dev-bypass-button"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export default async function SignUpPage() {
@@ -15,7 +14,7 @@ export default async function SignUpPage() {
   }
 
   // Check if user is already logged in
-  const supabase = createClient()
+  const supabase = await createClient()
   const {
     data: { session },
   } = await supabase.auth.getSession()

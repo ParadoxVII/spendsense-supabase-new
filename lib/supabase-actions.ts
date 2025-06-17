@@ -1,10 +1,10 @@
 "use server"
 
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import type { Bank, Statement } from "./db-types"
+import { createClient } from "./supabase/server"
 
 // Add a new bank for the current user
 export async function addBank(prevState: any, formData: FormData) {
@@ -17,7 +17,7 @@ export async function addBank(prevState: any, formData: FormData) {
   }
 
   const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = await createClient()
 
   // Get the current user
   const {
@@ -59,8 +59,7 @@ export async function addBank(prevState: any, formData: FormData) {
 
 // Get all banks for the current user
 export async function getBanks() {
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = await createClient()
 
   // Get the current user
   const {
@@ -88,8 +87,7 @@ export async function getBanks() {
 
 // Delete a bank and all its statements
 export async function deleteBank(bankId: string) {
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = await createClient()
 
   // Get the current user
   const {
@@ -121,8 +119,7 @@ export async function deleteBank(bankId: string) {
 
 // Delete multiple banks
 export async function deleteBanks(bankIds: string[]) {
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = await createClient()
 
   // Get the current user
   const {
@@ -155,8 +152,7 @@ export async function addStatement(prevState: any, formData: FormData) {
     return { error: "Bank ID, statement name, and file path are required" }
   }
 
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = await createClient()
 
   // Insert the statement
   const { error } = await supabase.from("statements").insert({
@@ -177,8 +173,7 @@ export async function addStatement(prevState: any, formData: FormData) {
 
 // Get all statements for a bank
 export async function getStatements(bankId: string) {
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = await createClient()
 
   // Get all statements for this bank
   const { data, error } = await supabase
@@ -197,8 +192,7 @@ export async function getStatements(bankId: string) {
 
 // Delete a statement
 export async function deleteStatement(statementId: string) {
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = await createClient()
 
   // Get the current user
   const {
@@ -246,8 +240,7 @@ export async function deleteStatement(statementId: string) {
 
 // Delete multiple statements
 export async function deleteStatements(statementIds: string[]) {
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = await createClient()
 
   // Get the current user
   const {
@@ -295,8 +288,7 @@ export async function deleteStatements(statementIds: string[]) {
 
 // Upload a file to Supabase Storage
 export async function uploadStatementFile(file: File, userId: string, bankId: string) {
-  const cookieStore = cookies()
-  const supabase = createServerActionClient({ cookies: () => cookieStore })
+  const supabase = await createClient()
 
   const fileExt = file.name.split(".").pop()
   const fileName = `${userId}/${bankId}/${Date.now()}.${fileExt}`

@@ -1,26 +1,7 @@
 "use server"
 
-import { createServerClient, type CookieOptions } from "@supabase/ssr"
-import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-
-async function createSupabaseServerActionClient() {
-  const cookieStore = await cookies()
-
-  return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-    cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
-      },
-      set(name: string, value: string, options: CookieOptions) {
-        cookieStore.set(name, value, options)
-      },
-      remove(name: string, options: CookieOptions) {
-        cookieStore.set(name, "", options)
-      },
-    },
-  })
-}
+import { createClient } from "./supabase/server"
 
 // Update the signIn function to handle redirects properly
 export async function signIn(prevState: any, formData: FormData) {
@@ -37,7 +18,7 @@ export async function signIn(prevState: any, formData: FormData) {
     return { error: "Email and password are required" }
   }
 
-  const supabase = await createSupabaseServerActionClient()
+  const supabase = await createClient()
 
   try {
     const { error } = await supabase.auth.signInWithPassword({
@@ -72,7 +53,7 @@ export async function signUp(prevState: any, formData: FormData) {
     return { error: "Email and password are required" }
   }
 
-  const supabase = await createSupabaseServerActionClient()
+  const supabase = await createClient()
 
   try {
     const { error } = await supabase.auth.signUp({
@@ -92,7 +73,7 @@ export async function signUp(prevState: any, formData: FormData) {
 }
 
 export async function signOut() {
-  const supabase = await createSupabaseServerActionClient()
+  const supabase = await createClient()
 
   await supabase.auth.signOut()
   redirect("/auth/login")
@@ -109,7 +90,7 @@ export async function devBypass() {
     redirect("/auth/login")
   }
 
-  const supabase = await createSupabaseServerActionClient()
+  const supabase = await createClient()
 
   try {
     // Create a custom session token for development
