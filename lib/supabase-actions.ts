@@ -6,14 +6,19 @@ import { redirect } from "next/navigation"
 import type { Bank, Statement } from "./db-types"
 import { createClient } from "./supabase/server"
 
-// Add a new bank for the current user
+// Add a new bank account for the current user
 export async function addBank(prevState: any, formData: FormData) {
-  const bankType = formData.get("bank_type") as string // Changed from "id" to "bank_type"
-  const bankName = formData.get("name") as string
+  const bankType = formData.get("bank_type") as string
+  const accountName = formData.get("account_name") as string
   const bankLogo = formData.get("logo") as string
 
-  if (!bankType || !bankName) {
-    return { error: "Bank type and name are required" }
+  if (!bankType || !accountName) {
+    return { error: "Bank type and account name are required" }
+  }
+
+  // Validate account name length
+  if (accountName.length > 25) {
+    return { error: "Account name must be 25 characters or less" }
   }
 
   const cookieStore = cookies()
@@ -28,28 +33,16 @@ export async function addBank(prevState: any, formData: FormData) {
     return { error: "User not authenticated" }
   }
 
-  // Check if user already has this bank type
-  const { data: existingBank } = await supabase
-    .from("banks")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("bank_type", bankType)
-    .single()
-
-  if (existingBank) {
-    return { error: "You have already added this bank" }
-  }
-
-  // Insert the bank (UUID will be auto-generated)
+  // Insert the bank account (UUID will be auto-generated)
   const { error } = await supabase.from("banks").insert({
     user_id: user.id,
     bank_type: bankType,
-    name: bankName,
+    account_name: accountName,
     logo: bankLogo || "default",
   })
 
   if (error) {
-    console.error("Error adding bank:", error)
+    console.error("Error adding bank account:", error)
     return { error: error.message }
   }
 
@@ -57,7 +50,48 @@ export async function addBank(prevState: any, formData: FormData) {
   return { success: true }
 }
 
-// Get all banks for the current user
+// Update bank account name
+export async function updateBankAccountName(prevState: any, formData: FormData) {
+  const bankId = formData.get("bank_id") as string
+  const accountName = formData.get("account_name") as string
+
+  if (!bankId || !accountName) {
+    return { error: "Bank ID and account name are required" }
+  }
+
+  // Validate account name length
+  if (accountName.length > 25) {
+    return { error: "Account name must be 25 characters or less" }
+  }
+
+  const supabase = await createClient()
+
+  // Get the current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: "User not authenticated" }
+  }
+
+  // Update the bank account name
+  const { error } = await supabase
+    .from("banks")
+    .update({ account_name: accountName })
+    .eq("id", bankId)
+    .eq("user_id", user.id)
+
+  if (error) {
+    console.error("Error updating account name:", error)
+    return { error: error.message }
+  }
+
+  revalidatePath("/dashboard")
+  return { success: true }
+}
+
+// Get all bank accounts for the current user
 export async function getBanks() {
   const supabase = await createClient()
 
@@ -70,7 +104,7 @@ export async function getBanks() {
     redirect("/auth/login")
   }
 
-  // Get all banks for this user
+  // Get all bank accounts for this user
   const { data, error } = await supabase
     .from("banks")
     .select("*")
@@ -78,14 +112,14 @@ export async function getBanks() {
     .order("created_at", { ascending: false })
 
   if (error) {
-    console.error("Error fetching banks:", error)
+    console.error("Error fetching bank accounts:", error)
     return []
   }
 
   return data as Bank[]
 }
 
-// Delete a bank and all its statements
+// Delete a bank account and all its statements
 export async function deleteBank(bankId: string) {
   const supabase = await createClient()
 
@@ -98,18 +132,18 @@ export async function deleteBank(bankId: string) {
     return { error: "User not authenticated" }
   }
 
-  // Verify the bank belongs to the user
+  // Verify the bank account belongs to the user
   const { data: bank } = await supabase.from("banks").select("id").eq("id", bankId).eq("user_id", user.id).single()
 
   if (!bank) {
-    return { error: "Bank not found or access denied" }
+    return { error: "Bank account not found or access denied" }
   }
 
-  // Delete the bank (statements will be deleted automatically due to CASCADE)
+  // Delete the bank account (statements will be deleted automatically due to CASCADE)
   const { error } = await supabase.from("banks").delete().eq("id", bankId)
 
   if (error) {
-    console.error("Error deleting bank:", error)
+    console.error("Error deleting bank account:", error)
     return { error: error.message }
   }
 
@@ -117,7 +151,7 @@ export async function deleteBank(bankId: string) {
   return { success: true }
 }
 
-// Delete multiple banks
+// Delete multiple bank accounts
 export async function deleteBanks(bankIds: string[]) {
   const supabase = await createClient()
 
@@ -130,11 +164,11 @@ export async function deleteBanks(bankIds: string[]) {
     return { error: "User not authenticated" }
   }
 
-  // Delete the banks (statements will be deleted automatically due to CASCADE)
+  // Delete the bank accounts (statements will be deleted automatically due to CASCADE)
   const { error } = await supabase.from("banks").delete().in("id", bankIds).eq("user_id", user.id)
 
   if (error) {
-    console.error("Error deleting banks:", error)
+    console.error("Error deleting bank accounts:", error)
     return { error: error.message }
   }
 
@@ -142,7 +176,7 @@ export async function deleteBanks(bankIds: string[]) {
   return { success: true }
 }
 
-// Add a new statement for a bank
+// Add a new statement for a bank account
 export async function addStatement(prevState: any, formData: FormData) {
   const bankId = formData.get("bank_id") as string
   const statementName = formData.get("name") as string
@@ -171,11 +205,11 @@ export async function addStatement(prevState: any, formData: FormData) {
   return { success: true }
 }
 
-// Get all statements for a bank
+// Get all statements for a bank account
 export async function getStatements(bankId: string) {
   const supabase = await createClient()
 
-  // Get all statements for this bank
+  // Get all statements for this bank account
   const { data, error } = await supabase
     .from("statements")
     .select("*")
