@@ -18,10 +18,26 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
-import { addStatement, getStatements, deleteStatements } from "@/lib/supabase-actions"
+import { addStatement, getStatements, deleteStatements, updateBankAccountName } from "@/lib/supabase-actions"
 import { useActionState } from "react"
 import type { Bank, Statement } from "@/lib/db-types"
 import { createClient } from "@/lib/supabase/client"
+import { Input } from "@/components/ui/input"
+
+// Helper function to get display name for bank types
+const getBankDisplayName = (bankType: string) => {
+  const bankNames: Record<string, string> = {
+    chase: "Chase",
+    bofa: "Bank of America",
+    wells: "Wells Fargo",
+    citi: "Citibank",
+    capital: "Capital One",
+    discover: "Discover",
+    amex: "American Express",
+    other: "Other Bank",
+  }
+  return bankNames[bankType] || bankType
+}
 
 interface BankCardProps {
   bank: Bank
@@ -40,6 +56,9 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
   const [state, formAction] = useActionState(addStatement, null)
   const [isPending, startTransition] = useTransition()
   const supabase = createClient()
+  const [editingAccountName, setEditingAccountName] = useState(false)
+  const [editState, editFormAction] = useActionState(updateBankAccountName, null)
+
   // Fetch statements on component mount
   useEffect(() => {
     async function fetchStatements() {
@@ -65,6 +84,14 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
       getStatements(bank.id).then((data) => setStatements(data))
     }
   }, [state, bank.id])
+
+  useEffect(() => {
+    if (editState?.success) {
+      setEditingAccountName(false)
+      // Refresh the page to show updated data
+      window.location.reload()
+    }
+  }, [editState])
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -157,9 +184,14 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
   return (
     <Card className={selectMode ? "opacity-75" : ""}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="flex items-center">
-          <CreditCard className="h-5 w-5 mr-2 text-primary" />
-          {bank.name}
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center">
+            <CreditCard className="h-5 w-5 mr-2 text-primary" />
+            <div className="flex flex-col">
+              <span className="text-lg font-semibold">{bank.account_name}</span>
+              <span className="text-sm text-muted-foreground font-normal">{getBankDisplayName(bank.bank_type)}</span>
+            </div>
+          </div>
         </CardTitle>
         {!selectMode && (
           <div className="flex items-center gap-1">
@@ -230,6 +262,17 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
                 </div>
               </DialogContent>
             </Dialog>
+            {!selectMode && !statementSelectMode && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full"
+                onClick={() => setEditingAccountName(true)}
+              >
+                <Edit3 className="h-4 w-4" />
+                <span className="sr-only">Edit Account Name</span>
+              </Button>
+            )}
           </div>
         )}
       </CardHeader>
@@ -338,6 +381,33 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
           </div>
         )}
       </CardContent>
+      <Dialog open={editingAccountName} onOpenChange={setEditingAccountName}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Account Name</DialogTitle>
+          </DialogHeader>
+          {editState?.error && (
+            <div className="bg-destructive/10 border border-destructive/50 text-destructive px-4 py-3 rounded mb-4">
+              {editState.error}
+            </div>
+          )}
+          <form action={editFormAction} className="space-y-4">
+            <input type="hidden" name="bank_id" value={bank.id} />
+            <div className="space-y-2">
+              <label htmlFor="account_name" className="text-sm font-medium">
+                Account Name (max 25 characters)
+              </label>
+              <Input id="account_name" name="account_name" defaultValue={bank.account_name} maxLength={25} required />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setEditingAccountName(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Save</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

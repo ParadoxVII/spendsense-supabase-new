@@ -1,8 +1,8 @@
 export interface Bank {
-  id: string // Now UUID
+  id: string // UUID
   user_id: string
   bank_type: string // The bank identifier (chase, bofa, etc.)
-  name: string
+  account_name: string // User-defined account name (max 25 chars)
   logo: string
   created_at: string
 }
