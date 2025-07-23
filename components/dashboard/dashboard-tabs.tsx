@@ -5,9 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { LogOut, BarChart3 } from "lucide-react"
 import { signOut } from "@/lib/actions"
-import BanksTab from "./banks-tab"
 import DashboardTab from "./dashboard-tab"
 import { ThemeToggle } from "@/components/theme-toggle"
+import BanksTab from "./bank-tabs"
 
 interface DashboardTabsProps {
   userEmail: string
