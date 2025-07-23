@@ -9,8 +9,7 @@ interface DevBypassButtonProps {
 }
 
 export default function DevBypassButton({ className }: DevBypassButtonProps) {
-  // Show in development, staging, and production environments
-  const allowedEnvs = ["development", "staging", "production"]
+  const allowedEnvs = ["development", "test"]
   const currentEnv = process.env.NODE_ENV || "development"
 
   if (!allowedEnvs.includes(currentEnv)) {

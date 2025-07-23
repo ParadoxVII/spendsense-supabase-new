@@ -105,6 +105,20 @@ export async function deleteBank(bankId: string) {
     return { error: "Bank not found or access denied" }
   }
 
+  // Get all statements for this bank to clean up storage files
+  const { data: statements } = await supabase
+    .from("statements")
+    .select("file_path")
+    .eq("bank_id", bankId)
+
+  // Delete files from storage first
+  if (statements && statements.length > 0) {
+    const filePaths = statements.map((s) => s.file_path).filter(Boolean)
+    if (filePaths.length > 0) {
+      await supabase.storage.from("statements").remove(filePaths)
+    }
+  }
+
   // Delete the bank (statements will be deleted automatically due to CASCADE)
   const { error } = await supabase.from("banks").delete().eq("id", bankId)
 
@@ -128,6 +142,20 @@ export async function deleteBanks(bankIds: string[]) {
 
   if (!user) {
     return { error: "User not authenticated" }
+  }
+
+  // Get all statements for these banks to clean up storage files
+  const { data: statements } = await supabase
+    .from("statements")
+    .select("file_path")
+    .in("bank_id", bankIds)
+
+  // Delete files from storage first
+  if (statements && statements.length > 0) {
+    const filePaths = statements.map((s) => s.file_path).filter(Boolean)
+    if (filePaths.length > 0) {
+      await supabase.storage.from("statements").remove(filePaths)
+    }
   }
 
   // Delete the banks (statements will be deleted automatically due to CASCADE)
