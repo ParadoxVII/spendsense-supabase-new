@@ -79,6 +79,85 @@ export async function signOut() {
   redirect("/auth/login")
 }
 
+export async function forgotPassword(prevState: any, formData: FormData) {
+  // Check if formData is valid
+  if (!formData) {
+    return { error: "Form data is missing" }
+  }
+
+  const email = formData.get("email")
+
+  // Validate required fields
+  if (!email) {
+    return { error: "Email is required" }
+  }
+
+  const supabase = await createClient()
+
+  try {
+    // Get the origin from headers for the redirect URL
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      email.toString(),
+      {
+        redirectTo: `${origin}/auth/reset-password`,
+      }
+    )
+
+    if (error) {
+      return { error: error.message }
+    }
+
+    return { success: "Check your email for password reset instructions." }
+  } catch (error) {
+    console.error("Forgot password error:", error)
+    return { error: "An unexpected error occurred. Please try again." }
+  }
+}
+
+export async function resetPassword(prevState: any, formData: FormData) {
+  // Check if formData is valid
+  if (!formData) {
+    return { error: "Form data is missing" }
+  }
+
+  const password = formData.get("password")
+  const confirmPassword = formData.get("confirmPassword")
+
+  // Validate required fields
+  if (!password || !confirmPassword) {
+    return { error: "Both password fields are required" }
+  }
+
+  // Validate passwords match
+  if (password !== confirmPassword) {
+    return { error: "Passwords do not match" }
+  }
+
+  // Validate password length
+  if (password.toString().length < 6) {
+    return { error: "Password must be at least 6 characters long" }
+  }
+
+  const supabase = await createClient()
+
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password: password.toString(),
+    })
+
+    if (error) {
+      return { error: error.message }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Reset password error:", error)
+    return { error: "An unexpected error occurred. Please try again." }
+  }
+}
+
 // Development bypass for authentication
 export async function devBypass() {
   // Allow in development, staging, and production environments
