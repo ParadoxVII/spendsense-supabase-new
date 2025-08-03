@@ -22,10 +22,10 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Signing in...
+          Logging in...
         </>
       ) : (
-        "Sign In"
+        "Log In"
       )}
     </Button>
   )
@@ -79,6 +79,11 @@ export default function LoginForm() {
               required
               className="bg-[#1c1c1c] border-gray-800 text-white"
             />
+          </div>
+          <div className="space-y-2">
+            <Link href="/auth/forgot-password" className="text-sm text-gray-400 hover:underline">
+              Forgot your password?
+            </Link>
           </div>
         </div>
 
