@@ -8,6 +8,7 @@ import { signOut } from "@/lib/actions"
 import DashboardTab from "./dashboard-tab"
 import { ThemeToggle } from "@/components/theme-toggle"
 import BanksTab from "./bank-tabs"
+import OcrTab from "./Ocr-tab"
 
 interface DashboardTabsProps {
   userEmail: string
@@ -41,17 +42,19 @@ export default function DashboardTabs({ userEmail }: DashboardTabsProps) {
       {/* Main Content */}
       <div className="flex-1 container mx-auto px-4 py-6">
         <Tabs defaultValue="banks" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
+          <TabsList className="grid w-full max-w-md grid-cols-3 mb-8">
             <TabsTrigger value="banks">Banks</TabsTrigger>
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="ocr">OCR</TabsTrigger>
           </TabsList>
-
           <TabsContent value="banks" className="space-y-4">
             <BanksTab />
           </TabsContent>
-
           <TabsContent value="dashboard">
             <DashboardTab />
+          </TabsContent>
+          <TabsContent value="ocr">
+            <OcrTab />
           </TabsContent>
         </Tabs>
       </div>
