@@ -29,7 +29,7 @@ async function extractFileFromFormData(req, fieldName = "file") {
         const arrayBuffer = await file.arrayBuffer();
         return new Uint8Array(arrayBuffer);
     } catch (err) {
-        console.error("extractFileFromFormData error:", err);
+        console.error("extractFileFromFormData error:", err.message);
         return null;
     }
 }
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
         console.error("parse-pdf error:", err);
         return withCors(JSON.stringify({
             error: "Failed to parse PDF.",
-            details: String(err)
+            details: String(err.message)
         }), 500);
     }
 });
