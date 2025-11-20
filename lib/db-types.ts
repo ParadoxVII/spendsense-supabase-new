@@ -14,4 +14,5 @@ export interface Statement {
   file_path: string
   upload_date: string
   processed: boolean
+  raw_text?: string
 }

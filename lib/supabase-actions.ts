@@ -175,6 +175,7 @@ export async function addStatement(prevState: any, formData: FormData) {
   const bankId = formData.get("bank_id") as string
   const statementName = formData.get("name") as string
   const filePath = formData.get("file_path") as string
+  const rawText = (formData.get("raw_text") as string) || null
 
   if (!bankId || !statementName || !filePath) {
     return { error: "Bank ID, statement name, and file path are required" }
@@ -183,12 +184,18 @@ export async function addStatement(prevState: any, formData: FormData) {
   const supabase = await createClient()
 
   // Insert the statement
-  const { error } = await supabase.from("statements").insert({
+  const insertPayload: any = {
     bank_id: bankId,
     name: statementName,
     file_path: filePath,
     processed: false,
-  })
+  }
+
+  if (rawText) {
+    insertPayload.raw_text = rawText
+  }
+
+  const { error } = await supabase.from("statements").insert(insertPayload)
 
   if (error) {
     console.error("Error adding statement:", error)
