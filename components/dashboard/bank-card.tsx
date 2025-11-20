@@ -98,7 +98,6 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
         parseForm.append("file", file)
 
         const { data: parseData, error: parseError } = await supabase.functions.invoke("parse-pdf", {
-          headers: { 'Content-Type': 'multipart/form-data' },
           body: parseForm,
         })
 
