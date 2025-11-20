@@ -18,7 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Checkbox } from "@/components/ui/checkbox"
-import { addStatement, getStatements, deleteStatements } from "@/lib/supabase-actions"
+import { addStatement, getStatements, deleteStatements, uploadStatementFile } from "@/lib/supabase-actions"
 import { useActionState } from "react"
 import type { Bank, Statement } from "@/lib/db-types"
 import { createClient } from "@/lib/supabase/client"
@@ -83,23 +83,45 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
       }
 
       // Upload file to Supabase Storage
-      const fileExt = file.name.split(".").pop()
-      const filePath = `${user.id}/${bank.id}/${Date.now()}.${fileExt}`
-
-      const { error: uploadError } = await supabase.storage.from("statements").upload(filePath, file)
-
-      if (uploadError) {
-        throw uploadError
+      const uploadResult = await uploadStatementFile(file, user.id, bank.id)
+      if ((uploadResult as any).error) {
+        console.error("Error uploading file to storage:", (uploadResult as any).error)
+        setUploading(false)
+        return
       }
 
-      // Add statement to database using startTransition
-      startTransition(() => {
-        const formData = new FormData()
-        formData.append("bank_id", bank.id)
-        formData.append("name", file.name)
-        formData.append("file_path", filePath)
-        formAction(formData)
-      })
+      const filePath = (uploadResult as any).filePath
+
+      // Invoke the Edge Function to parse the PDF. We send the original file as multipart/form-data.
+      try {
+        const parseForm = new FormData()
+        parseForm.append("file", file)
+
+        const { data: parseData, error: parseError } = await supabase.functions.invoke("parse-pdf", {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          body: parseForm,
+        })
+
+        if (parseError) {
+          console.error("Error parsing PDF via Edge Function:", parseError)
+        }
+
+        const parsedText = (parseData && (parseData as any).text) ? (parseData as any).text : ""
+
+        // Add statement to database using startTransition
+        startTransition(() => {
+          const formData = new FormData()
+          formData.append("bank_id", bank.id)
+          formData.append("name", file.name)
+          formData.append("file_path", filePath)
+          formData.append("raw_text", parsedText)
+          formAction(formData)
+        })
+      } catch (err) {
+        console.error("Error invoking parse-pdf function:", err)
+        setUploading(false)
+        return
+      }
     } catch (error) {
       console.error("Error uploading file:", error)
       setUploading(false)
