@@ -11,7 +11,10 @@ const geist = Geist({
 export const metadata: Metadata = {
   title: "SpendSense - Financial Insights",
   description: "Track and analyze your spending across multiple accounts and currencies",
-  generator: 'v0.dev'
+  generator: 'v0.dev',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
