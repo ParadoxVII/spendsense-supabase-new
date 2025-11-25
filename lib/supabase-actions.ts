@@ -225,6 +225,67 @@ export async function getStatements(bankId: string) {
   return data as Statement[]
 }
 
+// Fetch parsed JSON (if present) for all statements belonging to the current user.
+// Returns an array grouped by statement row. Each item contains the statement id, name, bank_id and
+// either an array of parsed entries or null when not present / not parseable.
+export async function getParsedStatementsGrouped() {
+  const supabase = await createClient()
+
+  // Get the current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/auth/login")
+  }
+
+  // Select statements joined with banks to ensure we only get rows for this user
+  const { data, error } = await supabase
+    .from("statements")
+    .select(`id, name, bank_id, parsed_text, raw_text, banks!inner(user_id)`)
+    .eq("banks.user_id", user.id)
+    .order("upload_date", { ascending: false })
+
+  if (error) {
+    console.error("Error fetching parsed statements:", error)
+    return []
+  }
+
+  // Map and parse parsed_text if present
+  const results = (data || []).map((row: any) => {
+    let parsed: any = null
+
+    if (row.parsed_text) {
+      try {
+        parsed = typeof row.parsed_text === "string" ? JSON.parse(row.parsed_text) : row.parsed_text
+      } catch (e) {
+        console.warn(`Could not parse parsed_text for statement ${row.id}`)
+        parsed = null
+      }
+    }
+
+    // If parsed is still null but raw_text contains JSON array, attempt to parse that as a best-effort
+    if (!parsed && row.raw_text) {
+      try {
+        const maybe = typeof row.raw_text === "string" ? JSON.parse(row.raw_text) : row.raw_text
+        if (Array.isArray(maybe)) parsed = maybe
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    return {
+      statement_id: row.id,
+      statement_name: row.name,
+      bank_id: row.bank_id,
+      parsed: Array.isArray(parsed) ? parsed : null,
+    }
+  })
+
+  return results
+}
+
 // Delete a statement
 export async function deleteStatement(statementId: string) {
   const supabase = await createClient()

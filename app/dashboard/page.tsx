@@ -1,6 +1,7 @@
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import DashboardTabs from "@/components/dashboard/dashboard-tabs"
+import { getParsedStatementsGrouped } from "@/lib/supabase-actions"
 
 export default async function Dashboard() {
   // If Supabase is not configured, show setup message directly
@@ -23,9 +24,12 @@ export default async function Dashboard() {
     redirect("/auth/login")
   }
 
+  // Fetch parsed statements grouped on the server
+  const parsedGroups = await getParsedStatementsGrouped()
+
   return (
     <div className="min-h-screen ">
-      <DashboardTabs userEmail={user.email || ""} />
+      <DashboardTabs userEmail={user.email || ""} parsedGroups={parsedGroups} />
     </div>
   )
 }
