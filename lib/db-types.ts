@@ -16,3 +16,19 @@ export interface Statement {
   processed: boolean
   raw_text?: string
 }
+
+// A single parsed transaction entry coming from statement parsing
+export interface ParsedEntry {
+  date: string
+  value: number
+  is_expense: boolean
+  description: string
+}
+
+// Grouped parsed entries for a single statement row
+export interface ParsedStatementGroup {
+  statement_id: string
+  statement_name: string
+  bank_id: string
+  parsed: ParsedEntry[] | null
+}

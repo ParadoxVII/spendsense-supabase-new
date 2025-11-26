@@ -9,11 +9,14 @@ import DashboardTab from "./dashboard-tab"
 import { ThemeToggle } from "@/components/theme-toggle"
 import BanksTab from "./bank-tabs"
 
+import type { ParsedStatementGroup } from "@/lib/db-types"
+
 interface DashboardTabsProps {
   userEmail: string
+  parsedGroups?: ParsedStatementGroup[]
 }
 
-export default function DashboardTabs({ userEmail }: DashboardTabsProps) {
+export default function DashboardTabs({ userEmail, parsedGroups }: DashboardTabsProps) {
   const [activeTab, setActiveTab] = useState("banks")
 
   return (
@@ -51,7 +54,7 @@ export default function DashboardTabs({ userEmail }: DashboardTabsProps) {
           </TabsContent>
 
           <TabsContent value="dashboard">
-            <DashboardTab />
+            <DashboardTab parsedGroups={parsedGroups} />
           </TabsContent>
         </Tabs>
       </div>
