@@ -105,20 +105,6 @@ export async function deleteBank(bankId: string) {
     return { error: "Bank not found or access denied" }
   }
 
-  // Get all statements for this bank to clean up storage files
-  const { data: statements } = await supabase
-    .from("statements")
-    .select("file_path")
-    .eq("bank_id", bankId)
-
-  // Delete files from storage first
-  if (statements && statements.length > 0) {
-    const filePaths = statements.map((s) => s.file_path).filter(Boolean)
-    if (filePaths.length > 0) {
-      await supabase.storage.from("statements").remove(filePaths)
-    }
-  }
-
   // Delete the bank (statements will be deleted automatically due to CASCADE)
   const { error } = await supabase.from("banks").delete().eq("id", bankId)
 
@@ -144,20 +130,6 @@ export async function deleteBanks(bankIds: string[]) {
     return { error: "User not authenticated" }
   }
 
-  // Get all statements for these banks to clean up storage files
-  const { data: statements } = await supabase
-    .from("statements")
-    .select("file_path")
-    .in("bank_id", bankIds)
-
-  // Delete files from storage first
-  if (statements && statements.length > 0) {
-    const filePaths = statements.map((s) => s.file_path).filter(Boolean)
-    if (filePaths.length > 0) {
-      await supabase.storage.from("statements").remove(filePaths)
-    }
-  }
-
   // Delete the banks (statements will be deleted automatically due to CASCADE)
   const { error } = await supabase.from("banks").delete().in("id", bankIds).eq("user_id", user.id)
 
@@ -174,11 +146,10 @@ export async function deleteBanks(bankIds: string[]) {
 export async function addStatement(prevState: any, formData: FormData) {
   const bankId = formData.get("bank_id") as string
   const statementName = formData.get("name") as string
-  const filePath = formData.get("file_path") as string
   const rawText = (formData.get("raw_text") as string) || null
 
-  if (!bankId || !statementName || !filePath) {
-    return { error: "Bank ID, statement name, and file path are required" }
+  if (!bankId || !statementName) {
+    return { error: "Bank ID and statement name are required" }
   }
 
   const supabase = await createClient()
@@ -187,7 +158,6 @@ export async function addStatement(prevState: any, formData: FormData) {
   const insertPayload: any = {
     bank_id: bankId,
     name: statementName,
-    file_path: filePath,
     processed: false,
   }
 
@@ -304,7 +274,6 @@ export async function deleteStatement(statementId: string) {
     .from("statements")
     .select(`
       id,
-      file_path,
       banks!inner (
         user_id
       )
@@ -315,11 +284,6 @@ export async function deleteStatement(statementId: string) {
 
   if (!statement) {
     return { error: "Statement not found or access denied" }
-  }
-
-  // Delete the file from storage
-  if (statement.file_path) {
-    await supabase.storage.from("statements").remove([statement.file_path])
   }
 
   // Delete the statement record
@@ -352,7 +316,6 @@ export async function deleteStatements(statementIds: string[]) {
     .from("statements")
     .select(`
       id,
-      file_path,
       banks!inner (
         user_id
       )
@@ -362,12 +325,6 @@ export async function deleteStatements(statementIds: string[]) {
 
   if (!statements || statements.length === 0) {
     return { error: "No statements found or access denied" }
-  }
-
-  // Delete files from storage
-  const filePaths = statements.map((s) => s.file_path).filter(Boolean)
-  if (filePaths.length > 0) {
-    await supabase.storage.from("statements").remove(filePaths)
   }
 
   // Delete the statement records
