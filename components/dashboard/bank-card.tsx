@@ -314,7 +314,13 @@ export default function BankCard({ bank, selectMode = false }: BankCardProps) {
                     />
                   )}
                   <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-sm truncate max-w-[150px]">{statement.name}</span>
+                  <span
+                    className="text-sm truncate max-w-[150px]"
+                    title={statement.name}
+                    aria-label={statement.name}
+                  >
+                    {statement.name}
+                  </span>
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {new Date(statement.upload_date).toLocaleDateString()}
