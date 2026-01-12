@@ -1,0 +1,248 @@
+[
+    {
+        "date": "2025-09-01",
+        "value": 10.00,
+        "is_expense": true,
+        "description": "Opening balance£1,795.01 01 Sep 2025GoCardless - VICTORIAPARK-P23H7 Direct Debit"
+    },
+    {
+        "date": "2025-09-01",
+        "value": 6.85,
+        "is_expense": true,
+        "description": "SIGNORELLI Purchase"
+    },
+    {
+        "date": "2025-09-02",
+        "value": 2.00,
+        "is_expense": true,
+        "description": "TFL Cycle Hire Purchase"
+    },
+    {
+        "date": "2025-09-03",
+        "value": 16.48,
+        "is_expense": false,
+        "description": "From LU J - Rent difference Payment"
+    },
+    {
+        "date": "2025-09-04",
+        "value": 1283.18,
+        "is_expense": true,
+        "description": "Ysi Get Living Purchase"
+    },
+    {
+        "date": "2025-09-04",
+        "value": 11.30,
+        "is_expense": true,
+        "description": "Mugen Purchase"
+    },
+    {
+        "date": "2025-09-05",
+        "value": 16.75,
+        "is_expense": true,
+        "description": "Nintendo Purchase"
+    },
+    {
+        "date": "2025-09-05",
+        "value": 1.45,
+        "is_expense": true,
+        "description": "Sainsbury's Purchase"
+    },
+    {
+        "date": "2025-09-07",
+        "value": 32.08,
+        "is_expense": true,
+        "description": "Vivaaerobus Purchase | COP 171,740.00 | FX rate £1 = COP 5,353.5197"
+    },
+    {
+        "date": "2025-09-07",
+        "value": 7.62,
+        "is_expense": true,
+        "description": "La Jungla De L - Clip Purchase | MXN 190.00 | FX rate £1 = MXN 24.9344"
+    },
+    {
+        "date": "2025-09-08",
+        "value": 11.31,
+        "is_expense": true,
+        "description": "Supercenter La Cruz Purchase | MXN 282.00 | FX rate £1 = MXN 24.9337"
+    },
+    {
+        "date": "2025-09-08",
+        "value": 9.22,
+        "is_expense": true,
+        "description": "Uber Purchase | MXN 229.96 | FX rate £1 = MXN 24.9414"
+    },
+    {
+        "date": "2025-09-08",
+        "value": 38.66,
+        "is_expense": true,
+        "description": "Bpk Bfn Consultores Purchase | MXN 963.60 | FX rate £1 = MXN 24.9250"
+    },
+    {
+        "date": "2025-09-09",
+        "value": 0.99,
+        "is_expense": true,
+        "description": "Apple / iTunes Purchase"
+    },
+    {
+        "date": "2025-09-09",
+        "value": 14.09,
+        "is_expense": true,
+        "description": "Uber Purchase | MXN 351.34 | FX rate £1 = MXN 24.9354"
+    },
+    {
+        "date": "2025-09-09",
+        "value": 0.36,
+        "is_expense": true,
+        "description": "Uber Purchase | MXN 9.00 | FX rate £1 = MXN 25.0000"
+    },
+    {
+        "date": "2025-09-10",
+        "value": 0.80,
+        "is_expense": true,
+        "description": "Metrobusl7tvm Purchase | MXN 20.00 | FX rate £1 = MXN 25.0000"
+    },
+    {
+        "date": "2025-09-11",
+        "value": 0.80,
+        "is_expense": true,
+        "description": "Uber Purchase | MXN 20.00 | FX rate £1 = MXN 25.0000"
+    },
+    {
+        "date": "2025-09-11",
+        "value": 9.21,
+        "is_expense": true,
+        "description": "Starbucks Purchase | MXN 231.00 | FX rate £1 = MXN 25.0814"
+    },
+    {
+        "date": "2025-09-11",
+        "value": 14.44,
+        "is_expense": true,
+        "description": "Uber Purchase | MXN 362.35 | FX rate £1 = MXN 25.0935"
+    },
+    {
+        "date": "2025-09-11",
+        "value": 6.36,
+        "is_expense": true,
+        "description": "Uber Purchase | MXN 159.95 | FX rate £1 = MXN 25.1494"
+    },
+    {
+        "date": "2025-09-11",
+        "value": 7.17,
+        "is_expense": true,
+        "description": "Uber Purchase | MXN 179.90 | FX rate £1 = MXN 25.0907"
+    },
+    {
+        "date": "2025-09-12",
+        "value": 4.40,
+        "is_expense": true,
+        "description": "Uber Purchase | MXN 110.00 | FX rate £1 = MXN 25.0000"
+    },
+    {
+        "date": "2025-09-12",
+        "value": 4.40,
+        "is_expense": true,
+        "description": "Uber Purchase | MXN 110.00 | FX rate £1 = MXN 25.0000"
+    },
+    {
+        "date": "2025-09-13",
+        "value": 4.48,
+        "is_expense": true,
+        "description": "Walmart Express Purchase | MXN 112.00 | FX rate £1 = MXN 25.0000"
+    },
+    {
+        "date": "2025-09-14",
+        "value": 9.14,
+        "is_expense": true,
+        "description": "Los De Pescado Malecon Purchase | MXN 228.00 | FX rate £1 = MXN 24.9453"
+    },
+    {
+        "date": "2025-09-15",
+        "value": 21.45,
+        "is_expense": true,
+        "description": "Los Cinco Soles Purchase | USD 29.00 | FX rate £1 = $1.3520"
+    },
+    {
+        "date": "2025-09-15",
+        "value": 59.52,
+        "is_expense": true,
+        "description": "Cun T3 Salid T892 Mxp Purchase | MXN 1,485.24 | FX rate £1 = MXN 24.9536"
+    },
+    {
+        "date": "2025-09-16",
+        "value": 4.49,
+        "is_expense": true,
+        "description": "Amazon Prime Purchase"
+    },
+    {
+        "date": "2025-09-19",
+        "value": 2627.40,
+        "is_expense": false,
+        "description": "From J SAINSBURYS PLC - 5711847 Payment"
+    },
+    {
+        "date": "2025-09-20",
+        "value": 28.40,
+        "is_expense": true,
+        "description": "Sushi Eatery Soho Purchase"
+    },
+    {
+        "date": "2025-09-21",
+        "value": 27.76,
+        "is_expense": true,
+        "description": "HaiDiLao HotPot Purchase"
+    },
+    {
+        "date": "2025-09-21",
+        "value": 120.00,
+        "is_expense": true,
+        "description": "TFL Cycle Hire Purchase"
+    },
+    {
+        "date": "2025-09-22",
+        "value": 82.50,
+        "is_expense": true,
+        "description": "AA Driving School Purchase"
+    },
+    {
+        "date": "2025-09-23",
+        "value": 20.64,
+        "is_expense": true,
+        "description": "Nisa Local Purchase"
+    },
+    {
+        "date": "2025-09-23",
+        "value": 42.00,
+        "is_expense": true,
+        "description": "Arnold Clark Hire Purchase"
+    },
+    {
+        "date": "2025-09-24",
+        "value": 32.99,
+        "is_expense": true,
+        "description": "Amazon Purchase"
+    },
+    {
+        "date": "2025-09-25",
+        "value": 10.00,
+        "is_expense": true,
+        "description": "GiffGaff Purchase"
+    },
+    {
+        "date": "2025-09-26",
+        "value": 1.35,
+        "is_expense": true,
+        "description": "Sainsbury's Purchase"
+    },
+    {
+        "date": "2025-09-29",
+        "value": 5.98,
+        "is_expense": true,
+        "description": "Nisa Local Purchase"
+    },
+    {
+        "date": "2025-09-30",
+        "value": 687.49,
+        "is_expense": true,
+        "description": "American Express Purchase"
+    }
+]
